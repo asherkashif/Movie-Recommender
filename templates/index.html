@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Movie Recommender</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<h1>Movie Recommendation System</h1>
+
+<div class="search-box">
+
+    <!-- Dropdown Only -->
+    <select id="movieDropdown">
+        <option value="">-- Select Movie --</option>
+        {% for movie in movies_list %}
+            <option value="{{ movie }}">{{ movie }}</option>
+        {% endfor %}
+    </select>
+
+    <button onclick="recommendMovie()">Recommend</button>
+
+</div>
+
+<h2>Recommended Movies</h2>
+
+<div id="moviesContainer" class="movies-container"></div>
+
+
+<script>
+function recommendMovie() {
+
+    let movieName = document.getElementById("movieDropdown").value;
+
+    if (!movieName) {
+        alert("Please select a movie");
+        return;
+    }
+
+    fetch("/recommend", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ movie: movieName })
+    })
+    .then(response => response.json())
+    .then(data => {
+
+        let container = document.getElementById("moviesContainer");
+        container.innerHTML = "";
+
+        if (data.names.length === 0) {
+            container.innerHTML = "<p class='error'>Movie not found</p>";
+            return;
+        }
+
+        for (let i = 0; i < data.names.length; i++) {
+            container.innerHTML += `
+                <div class="movie-card">
+                    <img src="${data.posters[i]}">
+                    <p>${data.names[i]}</p>
+                </div>
+            `;
+        }
+    });
+}
+</script>
+
+</body>
+</html>
